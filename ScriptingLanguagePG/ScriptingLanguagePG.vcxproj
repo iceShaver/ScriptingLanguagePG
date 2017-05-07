@@ -142,7 +142,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="krLIB\Console.cpp" />
+    <ClCompile Include="krLIB\Exception.cpp" />
+    <ClCompile Include="krLIB\List.cpp" />
+    <ClCompile Include="krLIB\Map.cpp" />
+    <ClCompile Include="krLIB\MultiMap.cpp" />
+    <ClCompile Include="krLIB\Queue.cpp" />
+    <ClCompile Include="krLIB\RedBlackTree.cpp" />
+    <ClCompile Include="krLIB\Stack.cpp" />
+    <ClCompile Include="krLIB\String.cpp" />
+    <ClCompile Include="krLIB\Vector.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Value.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="krLIB\Console.h" />
+    <ClInclude Include="krLIB\Exception.h" />
+    <ClInclude Include="krLIB\List.h" />
+    <ClInclude Include="krLIB\Map.h" />
+    <ClInclude Include="krLIB\MultiMap.h" />
+    <ClInclude Include="krLIB\Queue.h" />
+    <ClInclude Include="krLIB\RedBlackTree.h" />
+    <ClInclude Include="krLIB\Stack.h" />
+    <ClInclude Include="krLIB\String.h" />
+    <ClInclude Include="krLIB\Vector.h" />
+    <ClInclude Include="Value.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
