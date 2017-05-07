@@ -168,6 +168,9 @@
     <ClInclude Include="krLIB\Vector.h" />
     <ClInclude Include="Value.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="testy_aisd_projekt_2.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
