@@ -22,7 +22,7 @@
     <ProjectGuid>{1126CBBB-8EDE-450C-AE60-C648C118CDED}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ScriptingLanguagePG</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -153,6 +153,7 @@
     <ClCompile Include="krLIB\String.cpp" />
     <ClCompile Include="krLIB\Vector.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Operation.cpp" />
     <ClCompile Include="Value.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +167,7 @@
     <ClInclude Include="krLIB\Stack.h" />
     <ClInclude Include="krLIB\String.h" />
     <ClInclude Include="krLIB\Vector.h" />
+    <ClInclude Include="Operation.h" />
     <ClInclude Include="Value.h" />
   </ItemGroup>
   <ItemGroup>

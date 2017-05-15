@@ -19,3 +19,4 @@ class EndOfStreamException : Exception {};
 class ZeroDivisionException : Exception {};
 class BadIntegerCastException : Exception {};
 class NotFoundException : Exception {};
+class BadArgumentException : Exception {};
