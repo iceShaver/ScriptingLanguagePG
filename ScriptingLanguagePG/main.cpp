@@ -5,6 +5,7 @@
 #include "krLIB/Map.h"
 #include "Value.h"
 #include <iostream>
+using namespace std;
 unsigned int operationsConstraint;
 unsigned int operationsLimit;
 Map<String, Value> variables(Duplicates::OVERRIDE);
@@ -65,7 +66,11 @@ void parseInput(String input)
 	input = input.trim().replace('\n', ' ');
 	std::cout << input << std::endl;
 	std::cout << deleteNeedlessWhiteSpaces(input) << std::endl;
-	splitOperations(deleteNeedlessWhiteSpaces(input));
+	Vector<String> operations = splitOperations(deleteNeedlessWhiteSpaces(input));
+	for (String* operation : operations)
+	{
+		cout << *operation << endl;
+	}
 	while (input)
 	{
 		String block;
@@ -83,7 +88,8 @@ void condition(String conditionCommand)
 void loop(String loopCommand) {
 
 }
-Vector<String> splitOperations(String expression)
+Vector<String> splitOperations(String expression)//TODO: fix missing closing brackets at the end of expression for test 4
+//TODO: fix test 8 (brackets and operations)
 {
 	Vector<String>result;
 	expression = expression.trim().replace('\n', ' ');
@@ -147,7 +153,7 @@ Vector<String> splitOperations(String expression)
 
 
 		//assignment or condition operation
-		if (expression.isLetter(expression[0]))
+		if (expression.isLetter(expression[0]) || expression.isDigit(expression[0]))
 		{
 			String tmp = expression;
 			int i = 0;
@@ -296,7 +302,7 @@ String deleteNeedlessWhiteSpaces(String expression)
 	expression.trim();
 	String result;
 	while (expression)
-	{
+	{	//TODO: add situation where between there are two spaces between
 		//search operations separator sequence: "var var" || "number number" || "} number" || "} var"
 		String segment1, segment2, segment3;
 		segment1 = expression.readSegment();
@@ -306,6 +312,7 @@ String deleteNeedlessWhiteSpaces(String expression)
 			&& (segment2 == " ")
 			&& (String::isLetter(segment3[0]) || String::isDigit(segment3[0])/* || segment3 == "}" || segment3 == ")"*/))
 		{
+			
 			result += expression.substring(0, segment1.getLength() + segment2.getLength() + segment3.getLength());
 			expression = expression.substring(segment1.getLength() + segment2.getLength() + segment3.getLength());
 			if (!expression)return result;
@@ -319,8 +326,17 @@ String deleteNeedlessWhiteSpaces(String expression)
 			expression = expression.substring(tmp.getLength());
 			if (!expression)return result;
 			expression = expression.trim();
+			
 		}
 
+		//if result last char and first expression char are var-var, digit-var, var-digit, digit-digit
+		//situation caused by two white characters one by one
+		if (
+			(String::isLetter(result[result.getLength() - 1]) || String::isDigit(result[result.getLength() - 1]))
+			&& 
+			(String::isLetter(expression[0]) || String::isDigit(expression[0]))
+			)//is var or is number
+			result += " ";
 
 	}
 	return result;
