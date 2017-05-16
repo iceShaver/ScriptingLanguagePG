@@ -88,7 +88,7 @@ void condition(String conditionCommand)
 void loop(String loopCommand) {
 
 }
-Vector<String> splitOperations(String expression)//TODO: fix missing closing brackets at the end of expression for test 4
+Vector<String> splitOperations(String expression)
 //TODO: fix test 8 (brackets and operations)
 {
 	Vector<String>result;
@@ -129,6 +129,8 @@ Vector<String> splitOperations(String expression)//TODO: fix missing closing bra
 			bracketsCounter = 0;
 			while (true)
 			{
+				if(i>=expression.getLength())
+					break;
 				if (expression[i] == '{')
 					++bracketsCounter;
 				if (expression[i] == '}')
@@ -145,7 +147,7 @@ Vector<String> splitOperations(String expression)//TODO: fix missing closing bra
 			expression = expression.substring(i + 1);
 			if (!expression)
 				return result;
-			expression = expression.trim();//TODO:care if string empty for trim
+			expression = expression.trim();
 			if (!expression)
 				return result;
 		}
@@ -157,10 +159,19 @@ Vector<String> splitOperations(String expression)//TODO: fix missing closing bra
 		{
 			String tmp = expression;
 			int i = 0;
-			while (tmp[i] != ' ' && tmp[i] != '{' && tmp[i] != '?' && tmp[i] != '@' && tmp[i] != ')'&&tmp[i] != '}')
+			int bracketsCounter;
+			while (tmp[i] != ' ' && tmp[i] != '{' && tmp[i] != '?' && tmp[i] != '@' /*&& tmp[i] != ')'*/&&tmp[i] != '}')//i nie jest tak ¿e liczba 
 			{
 				++i;
 				if(i>=tmp.getLength())break;
+				/*
+				 * jezeli )
+				 *		jezeli bracketsCounter==0
+				 *			break;
+				 *		else
+				 *			bracketsCounter
+				 * jezeli (
+				 */
 			}
 			tmp = tmp.substring(0, i);
 			result.pushLast(new String(tmp));
@@ -170,9 +181,6 @@ Vector<String> splitOperations(String expression)//TODO: fix missing closing bra
 			expression = expression.trim();
 		}
 		if (!expression) return result;
-
-		//TODO: number is too in condition operation
-
 	}
 	//return Vector<String>();
 }
@@ -302,7 +310,7 @@ String deleteNeedlessWhiteSpaces(String expression)
 	expression.trim();
 	String result;
 	while (expression)
-	{	//TODO: add situation where between there are two spaces between
+	{
 		//search operations separator sequence: "var var" || "number number" || "} number" || "} var"
 		String segment1, segment2, segment3;
 		segment1 = expression.readSegment();
@@ -310,7 +318,7 @@ String deleteNeedlessWhiteSpaces(String expression)
 		segment3 = expression.substring(segment1.getLength() + segment2.getLength()).readSegment();
 		if ((String::isLetter(segment1[0]) || String::isDigit(segment1[0]) || segment1 == "}" || segment1 == ")")
 			&& (segment2 == " ")
-			&& (String::isLetter(segment3[0]) || String::isDigit(segment3[0])/* || segment3 == "}" || segment3 == ")"*/))
+			&& (String::isLetter(segment3[0]) || String::isDigit(segment3[0])/* || segment3 == "}" || segment3 == ")"*/|| segment3[0]=='('))
 		{
 			
 			result += expression.substring(0, segment1.getLength() + segment2.getLength() + segment3.getLength());

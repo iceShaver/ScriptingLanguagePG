@@ -492,7 +492,7 @@ String& String::toUpper()
 	return *this;
 }
 
-String String::trim() const
+String String::trim() const//TODO: care if string is empty
 {
 	String result = *this;
 	size_t trimStartIndex = 0;
