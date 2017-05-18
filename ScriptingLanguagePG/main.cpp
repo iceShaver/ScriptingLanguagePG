@@ -6,6 +6,11 @@
 #include "Value.h"
 #include <iostream>
 using namespace std;
+
+/*
+ * TODO: care situation where one var or number is a condition
+ * TODO: care unary operators
+ */
 unsigned int operationsConstraint;
 unsigned int operationsLimit;
 Map<String, Value> variables(Duplicates::OVERRIDE);
@@ -19,11 +24,12 @@ void parseInput(String input);
 void condition(String conditionCommand);
 void loop(String loopCommand);
 Vector<String> splitOperations(String expression);
+Vector<String> splitComplexOperation(String operation);
 String convertToRPN(String expression);
 Value calculateRPN(String rpnExpression);
-String calculate(String command, String lVal, String rVal);
+String calculate(String command, String lVal, String rVal = "");
 String deleteNeedlessWhiteSpaces(String expression);
-
+bool isCompareOperator(const String&text);
 
 void printVariables()
 {
@@ -43,35 +49,41 @@ void setVariablesToPrint()
 void init()
 {
 	variables.push(new String("Nul"), new Value());
-
 	operators.push(new String('='), new int(0));
 	operators.push(new String('|'), new int(1));
 	operators.push(new String('&'), new int(2));
-	operators.push(new String('!='), new int(3));
-	operators.push(new String('=='), new int(3));
+	operators.push(new String("!="), new int(3));
+	operators.push(new String("=="), new int(3));
 	operators.push(new String('<'), new int(4));
 	operators.push(new String('>'), new int(4));
-	operators.push(new String('<='), new int(4));
-	operators.push(new String('>='), new int(4));
+	operators.push(new String("<="), new int(4));
+	operators.push(new String(">="), new int(4));
 	operators.push(new String('+'), new int(5));
 	operators.push(new String('-'), new int(5));
 	operators.push(new String('/'), new int(6));
 	operators.push(new String('*'), new int(6));
 	operators.push(new String('%'), new int(6));
 	operators.push(new String('!'), new int(7));
-	operators.push(new String('-u'), new int(7));
+	operators.push(new String("-u"), new int(7));
 }
+
+bool performOperation(const String& operation);
+
 void parseInput(String input)
 {
 	input = input.trim().replace('\n', ' ');
-	std::cout << input << std::endl;
-	std::cout << deleteNeedlessWhiteSpaces(input) << std::endl;
+	//std::cout << input << std::endl;
+	//std::cout << deleteNeedlessWhiteSpaces(input) << std::endl;
 	Vector<String> operations = splitOperations(deleteNeedlessWhiteSpaces(input));
 	for (String* operation : operations)
 	{
 		cout << *operation << endl;
+		//cout << calculateRPN(convertToRPN(*operation));
+		performOperation(*operation);
 	}
-	while (input)
+	//cout << calculateRPN(convertToRPN(input));
+	//cout << endl;
+	/*while (input)
 	{
 		String block;
 		do {
@@ -79,7 +91,9 @@ void parseInput(String input)
 			input = input.substring(block.getLength());
 		} while (block == " ");
 		std::cout << block << std::endl;
-	}
+	}*/
+
+
 }
 void condition(String conditionCommand)
 {
@@ -129,7 +143,7 @@ Vector<String> splitOperations(String expression)
 			bracketsCounter = 0;
 			while (true)
 			{
-				if(i>=expression.getLength())
+				if (i >= expression.getLength())
 					break;
 				if (expression[i] == '{')
 					++bracketsCounter;
@@ -151,6 +165,7 @@ Vector<String> splitOperations(String expression)
 			if (!expression)
 				return result;
 		}
+
 		if (!expression) return result;
 
 
@@ -163,7 +178,7 @@ Vector<String> splitOperations(String expression)
 			while (tmp[i] != ' ' && tmp[i] != '{' && tmp[i] != '?' && tmp[i] != '@' /*&& tmp[i] != ')'*/&&tmp[i] != '}')//i nie jest tak ¿e liczba 
 			{
 				++i;
-				if(i>=tmp.getLength())break;
+				if (i >= tmp.getLength())break;
 				/*
 				 * jezeli )
 				 *		jezeli bracketsCounter==0
@@ -184,6 +199,59 @@ Vector<String> splitOperations(String expression)
 	}
 	//return Vector<String>();
 }
+
+Vector<String> splitComplexOperation(String expression)
+{
+	String operation, condition, body;
+	Vector<String> result;
+
+	operation = expression.substring(0, 1);
+	int length;
+	int bracketsCounter = 0;
+
+	//read condition
+	condition = "";
+	int i = 2;
+	while (true)
+	{
+		if (expression[i] == '(')
+			++bracketsCounter;
+		if (expression[i] == ')') {
+			if (bracketsCounter == 0)
+				break;
+			--bracketsCounter;
+		}
+		++i;
+	}
+	length = i - 2;
+	//condition = expression.substring(2, length);
+	result.pushLast(new String(expression.substring(2, length)));
+
+	//read body
+	expression = expression.substring(i + 1).trim();
+	i = 1;
+	bracketsCounter = 0;
+	while (true)
+	{
+		if (i >= expression.getLength())
+			break;
+		if (expression[i] == '{')
+			++bracketsCounter;
+		if (expression[i] == '}')
+		{
+			if (bracketsCounter == 0)
+				break;
+			--bracketsCounter;
+		}
+		++i;
+	}
+	length = i - 1;
+	//body = expression.substring(1, length).trim();
+	result.pushLast(new String(expression.substring(1, length).trim()));
+	//expression = expression.substring(i + 1);
+	return result;
+}
+
 String convertToRPN(String expression)
 {
 	Stack<String> stack;
@@ -193,7 +261,7 @@ String convertToRPN(String expression)
 	{
 		token = expression.readSegment();
 		expression = expression.substring(token.getLength());
-		if (String::isLetter(token[0]) || String::isDigit(token[0]))
+		if (String::isLetter(token[0]) || String::isDigit(token[0]) || token[0]=='-'&&String::isDigit(token[1])&&token.getLength()>=2)
 			result += token + " ";
 		else if (token == "(")
 			stack.Push(new String(token));
@@ -241,7 +309,7 @@ Value calculateRPN(String rpnExpression)
 	{
 		token = rpnExpression.readSegment();
 		rpnExpression = rpnExpression.substring(token.getLength() + 1);
-		if (String::isLetter(token[0]) || String::isDigit(token[0]))
+		if (String::isLetter(token[0]) || String::isDigit(token[0]) || token[0] == '-'&&String::isDigit(token[1]) && token.getLength() >= 2)//if is operand
 			stack.Push(new String(token));
 		else
 		{
@@ -249,6 +317,10 @@ Value calculateRPN(String rpnExpression)
 			val2 = *tmp;
 			delete tmp;
 			tmp = stack.Pop();
+			//if (tmp == nullptr) {//operacja unarna (bo brakuje pierwszego operanda)
+			//	stack.Push(new String(calculate(token, val2)));
+			//	continue;;
+			//}
 			val1 = *tmp;
 			delete tmp;
 			result = calculate(token, val1, val2);
@@ -269,7 +341,7 @@ String calculate(String command, String lVal, String rVal)
 	else if (String::isLetter(lVal[0]))
 	{
 		const Value*var = variables.peek(&lVal);
-		if (!var)
+		if (!var) //if var does not exist -> create it
 		{
 			variables.push(new String(lVal), new Value());
 		}
@@ -278,12 +350,19 @@ String calculate(String command, String lVal, String rVal)
 			left = *var;
 		}
 	}
-	if (String::isDigit(rVal[0]))
+	if (rVal == "")
+	{
+		if (command == "!")
+			return !left;
+		if (command == "-")
+			return -left;
+	}
+	if (String::isDigit(rVal[0])|| rVal[0] == '-'&&String::isDigit(rVal[1]) && rVal.getLength() >= 2)
 		right = (Value)rVal;
 	else if (String::isLetter(rVal[0]))
 	{
 		const Value*var = variables.peek(&rVal);
-		if (!var)
+		if (!var) //if var does not exist -> create it
 			variables.push(new String(rVal), new Value());
 		else
 			right = *var;
@@ -302,6 +381,11 @@ String calculate(String command, String lVal, String rVal)
 	if (command == "%") return left % right;
 	if (command == "&") return left & right;
 	if (command == "|") return left | right;
+	if (command == "=")
+	{
+		variables.update(&lVal, new Value(right));
+		return right;
+	}
 	return Value();
 }
 
@@ -318,9 +402,9 @@ String deleteNeedlessWhiteSpaces(String expression)
 		segment3 = expression.substring(segment1.getLength() + segment2.getLength()).readSegment();
 		if ((String::isLetter(segment1[0]) || String::isDigit(segment1[0]) || segment1 == "}" || segment1 == ")")
 			&& (segment2 == " ")
-			&& (String::isLetter(segment3[0]) || String::isDigit(segment3[0])/* || segment3 == "}" || segment3 == ")"*/|| segment3[0]=='('))
+			&& (String::isLetter(segment3[0]) || String::isDigit(segment3[0])/* || segment3 == "}" || segment3 == ")"*/ || segment3[0] == '('))
 		{
-			
+
 			result += expression.substring(0, segment1.getLength() + segment2.getLength() + segment3.getLength());
 			expression = expression.substring(segment1.getLength() + segment2.getLength() + segment3.getLength());
 			if (!expression)return result;
@@ -334,20 +418,93 @@ String deleteNeedlessWhiteSpaces(String expression)
 			expression = expression.substring(tmp.getLength());
 			if (!expression)return result;
 			expression = expression.trim();
-			
+
 		}
 
 		//if result last char and first expression char are var-var, digit-var, var-digit, digit-digit
 		//situation caused by two white characters one by one
 		if (
 			(String::isLetter(result[result.getLength() - 1]) || String::isDigit(result[result.getLength() - 1]))
-			&& 
+			&&
 			(String::isLetter(expression[0]) || String::isDigit(expression[0]))
 			)//is var or is number
 			result += " ";
 
 	}
 	return result;
+}
+
+bool isCompareOperator(const String& text)
+{
+	if (text == ">" || text == ">=" || text == "<" || text == "<=" || text == "==" || text == "!=")return true;
+	return false;
+}
+
+void executeLoop(const String& operation);
+
+void executeIf(const String& operation);
+
+bool executeSimpleOperation(const String& operation);
+
+bool performOperation(const String& operation)
+{
+	if (operation[0] == '@')
+		executeLoop(operation);
+	else if (operation[0] == '?')
+		executeIf(operation);
+	else
+		return executeSimpleOperation(operation);
+	return false;
+}
+
+bool performCondition(const String& condition);
+
+void executeLoop(const String& operation)
+{
+	Vector<String> splittedLoop = splitComplexOperation(operation);
+	String condition = *splittedLoop[0];
+	String body = *splittedLoop[1];
+	Vector<String> bodyOperations = splitOperations(body);
+	while (performOperation(condition))
+	{
+		if (bodyOperations.getSize() == 1)
+			performOperation(body);
+		else
+			for (String* operation : bodyOperations)
+				performOperation(*operation);
+	}
+
+}
+
+void executeIf(const String& operation)
+{
+	Vector<String> splittedIf = splitComplexOperation(operation);
+	String condition = *splittedIf[0];
+	String body = *splittedIf[1];
+	Vector<String>bodyOperations = splitOperations(body);
+	if (performOperation(condition))
+	{
+		if (bodyOperations.getSize() == 1)
+			performOperation(body);
+		else
+			for (String* operation : bodyOperations)
+				performOperation(*operation);
+	}
+}
+
+bool executeCompareExpression(const String& operation);
+
+bool executeAssignmentOperation(const String& operation);
+
+bool executeSimpleOperation(const String& operation)
+{
+	return calculateRPN(convertToRPN(operation));
+}
+
+
+bool executeAssignmentOperation(const String& operation)
+{
+	return false;
 }
 
 

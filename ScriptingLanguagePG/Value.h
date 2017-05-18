@@ -7,6 +7,7 @@ class Value
 public:
 	Value();
 	Value(int value);
+	Value(bool boolean);
 	explicit Value(const String&str);
 	//funkcje zmieniajace wartosc obecnej wartosci
 	Value& operator=(const Value&other);
@@ -35,6 +36,7 @@ public:
 
 	//operatory konwertujace
 	operator String();
+	operator bool();
 
 
 private:

@@ -286,8 +286,8 @@ String& String::operator+=(const String& appendedString)
 
 String& String::operator=(const String&other)
 {
-	if(array)
-	delete[] array;
+	if (array)
+		delete[] array;
 	capacity = other.length;
 	length = other.length;
 	array = new char[capacity];
@@ -393,8 +393,8 @@ String String::replace(const char& from, const char& to) const
 {
 	String result = *this;
 	for (int i = 0; i < result.length; ++i)
-			if (result.array[i] == from)
-				result.array[i] = to;
+		if (result.array[i] == from)
+			result.array[i] = to;
 
 	return result;
 }
@@ -431,7 +431,9 @@ String String::readDecimalIntegerNumber() const
 	size_t count = 0;
 	for (char character : *this)
 	{
-		if (!isDigit(character)) break;
+		if (!isDigit(character))
+			if (!(character=='-'&&count==0))
+				break;
 		count++;
 	}
 	return substring(0, count);
@@ -444,8 +446,10 @@ String String::readDecimalIntegerNumber() const
  */
 String String::readSegment() const
 {
-	//TODO: ' ' ommiting
-	if (isDigit(array[0])) return readDecimalIntegerNumber();
+	//TODO: ' ' ommiting DONE
+	if (isDigit(array[0])
+		|| isDigit(array[1]) && array[0] == '-'&&length >= 2//or number with -
+		) return readDecimalIntegerNumber();
 	if (isLetter(array[0])) return readOnlyLettersWord();
 	if (isOperatorSymbol(array[0])) return readOperator();
 	return substring(0, 1);

@@ -16,6 +16,19 @@ Value::Value(int value) : value(value), isNul(false)
 {
 }
 
+Value::Value(bool boolean)
+{
+	if(boolean)
+	{
+		isNul = false;
+		value = 0;
+	}else
+	{
+		isNul = true;
+		value = 0;
+	}
+}
+
 Value::Value(const String& str)
 {
 	if(str=="Nul")
@@ -139,4 +152,10 @@ Value::operator String()
 {
 	if (isNul) return String("Nul");
 	return String(value);
+}
+
+Value::operator bool()
+{
+	if (isNul)return false;
+	return true;
 }
