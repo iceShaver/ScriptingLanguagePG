@@ -6,7 +6,7 @@ class Map : RedBlackTree<Key, Value>
 	typedef RedBlackTree<Key, Value> base;
 public:
 	typedef RedBlackTree<Key, Value>::Iterator Iterator;
-	explicit Map(Duplicates = FORBID);
+	/*explicit*/ Map(Duplicates = FORBID);
 	~Map();
 	void push(Key*key, Value*value) throw(DuplicateException);
 	void update(Key*key, Value*value) throw(NotFoundException);

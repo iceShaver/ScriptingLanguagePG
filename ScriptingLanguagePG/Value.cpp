@@ -1,5 +1,5 @@
 #include "Value.h"
-#include "krLIB/Exception.h"
+#include "Exception.h"
 
 std::ostream& operator<<(std::ostream& os, const Value& obj)
 {
@@ -83,7 +83,7 @@ Value Value::operator*(const Value& other) const
 Value Value::operator/(const Value& other) const
 {
 	if (isNul || other.isNul)return Value();
-	if (other.value == 0) throw ZeroDivisionException();
+	if (other.value == 0) return Value();//throw ZeroDivisionException();
 	return value / other.value;
 }
 
@@ -114,6 +114,7 @@ Value Value::operator+() const
 
 Value Value::operator==(const Value& other) const
 {
+	if (isNul && other.isNul)return 0;
 	if (isNul || other.isNul)return Value();
 	return value == other.value;
 }

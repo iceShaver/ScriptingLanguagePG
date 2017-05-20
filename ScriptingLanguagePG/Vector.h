@@ -19,7 +19,7 @@ public:
 	class Iterator;
 	Vector();
 	Vector(const Vector&other);
-	explicit Vector(size_t initSize, SizeManagement = Static);
+	/*explicit*/ Vector(size_t initSize, SizeManagement = Static);
 	~Vector();
 	Wrapper operator[](size_t index);
 	const Type*operator[](size_t index) const;
@@ -46,7 +46,7 @@ class Vector<Type>::Wrapper {
 public:
 	Wrapper(Vector<Type> *arr, size_t index) : index(index), arr(arr) {}
 	operator Type*() const;
-	explicit operator Type() const;
+	/*explicit*/ operator Type() const;
 	Wrapper& operator=(Type* newObject);
 private:
 	size_t index;
@@ -80,7 +80,7 @@ public:
 	bool operator<(const Iterator&other)const;
 	bool operator<=(const Iterator&other)const;
 private:
-	explicit Iterator(Type**ptr);
+	/*explicit*/ Iterator(Type**ptr);
 	Type**ptr;
 	friend Vector;
 };
@@ -90,7 +90,14 @@ private:
 
 //__________________________________Vector implementation___________________________________
 template<class Type>
-Vector<Type>::Vector() : Vector(1, Dynamic) {}
+Vector<Type>::Vector()
+{
+	size = 1;
+	sizeManagement = Dynamic;
+	tailIndex = 0;
+	array = new Type*[size]();
+	lastPtr = array + size - 1;
+}
 
 template <class Type>
 Vector<Type>::Vector(const Vector& other) : sizeManagement(other.sizeManagement), array(new Type*[other.size]), size(other.size), tailIndex(other.tailIndex)
@@ -134,9 +141,10 @@ template <class Type>
 Vector<Type>& Vector<Type>::operator=(const Vector<Type>& other)
 {
 
-	for (Type* elem : other)
+	//for (Type* elem : other)
+	for(Iterator it = other.begin();it!=other.end();++it)
 	{
-		this->pushLast(new Type(*elem));
+		this->pushLast(new Type(**it));
 	}
 	return *this;
 }

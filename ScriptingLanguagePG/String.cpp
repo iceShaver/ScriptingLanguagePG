@@ -50,7 +50,7 @@ String::operator bool() const
 
 String::String(const String& newString)
 {
-	if (newString == nullptr)
+	if (&newString == nullptr)
 	{
 		String();
 		return;
@@ -301,7 +301,19 @@ char& String::operator[](size_t index) const throw(OutOfRangeException)
 	return *(array + index);
 }
 
+char& String::operator[](int index) const throw(OutOfRangeException)
+{
+	if (index >= length) throw OutOfRangeException();
+	return *(array + index);
+}
+
 bool String::operator==(const String& other) const
+{
+	if (compare(*this, other) == 0)return true;
+	return false;
+}
+
+bool String::operator==(const char* other) const
 {
 	if (compare(*this, other) == 0)return true;
 	return false;
@@ -363,6 +375,22 @@ String& String::prepend(const String&prependedString)
 	return *this;
 }
 
+String& String::insertBefore(size_t index, const String& string)
+{
+	if (index > length)throw OutOfRangeException();
+	while (capacity <= length + string.length)resize();
+	char*newString = new char[length + string.length];
+	copy(array, newString, index);
+	copy(string.array, newString + index, string.length);
+	copy(array + index, newString + index + string.length, length - index);
+	if (array)
+		delete[]array;
+	array = newString;
+	length += string.length;
+	return *this;
+}
+
+
 String String::substring(size_t beginIndex, size_t count) const throw(OutOfRangeException)
 {
 	if (beginIndex >= length) return String();
@@ -399,16 +427,19 @@ String String::replace(const char& from, const char& to) const
 	return result;
 }
 
+
+
 Vector<String> String::split(const char &splitter)
 {
 	Vector<String> result;
 	short i = 0;
-	for (char c : *this)
+	//for (char c : *this)
+	for (Iterator it = begin(); it != end(); ++it)
 	{
 		if (!result[i])
 			result[i] = new String;
-		if (c != splitter)
-			*(result[i]) += c;
+		if (*it != splitter)
+			*(result[i]) += *it;
 		else
 			i++;
 	}
@@ -418,9 +449,13 @@ Vector<String> String::split(const char &splitter)
 String String::readOnlyLettersWord() const
 {
 	size_t count = 0;
-	for (char character : *this)
+	//for (char character : *this)
+	for (Iterator it = begin(); it != end(); ++it)
+
 	{
-		if (!isLetter(character)) break;
+		if (!isLetter(*it))
+			if (!(*it == '-'&&count == 0))
+				break;
 		count++;
 	}
 	return substring(0, count);
@@ -429,10 +464,12 @@ String String::readOnlyLettersWord() const
 String String::readDecimalIntegerNumber() const
 {
 	size_t count = 0;
-	for (char character : *this)
+	//for (char character : *this)
+	for (Iterator it = begin(); it != end(); ++it)
+
 	{
-		if (!isDigit(character))
-			if (!(character=='-'&&count==0))
+		if (!isDigit(*it))
+			if (!(*it == '-'&&count == 0))
 				break;
 		count++;
 	}
@@ -450,7 +487,9 @@ String String::readSegment() const
 	if (isDigit(array[0])
 		|| isDigit(array[1]) && array[0] == '-'&&length >= 2//or number with -
 		) return readDecimalIntegerNumber();
-	if (isLetter(array[0])) return readOnlyLettersWord();
+	if (isLetter(array[0])
+		|| isLetter(array[1]) && array[0] == '-'&&length >= 2//or var with -
+		) return readOnlyLettersWord();
 	if (isOperatorSymbol(array[0])) return readOperator();
 	return substring(0, 1);
 }
@@ -458,9 +497,11 @@ String String::readSegment() const
 String String::readOperator() const
 {
 	size_t count = 0;
-	for (char c : *this)
+	//for (char c : *this)
+	for (Iterator it = begin(); it != end(); ++it)
+
 	{
-		if (!isOperatorSymbol(c)) break;
+		if (!isOperatorSymbol(*it)) break;
 		count++;
 	}
 	String result = substring(0, count);
@@ -503,7 +544,7 @@ String String::trim() const//TODO: care if string is empty
 	char*ptr = array;
 	for (int i = 0; i < length; ++i)
 	{
-		if (*ptr != ' '&&*ptr != '\n')break;
+		if (*ptr != ' '&&*ptr != '\n' &&*ptr!='\t')break;
 		trimStartIndex++;
 		ptr++;
 	}
@@ -523,7 +564,7 @@ String String::trim() const//TODO: care if string is empty
 	size_t trimStopIndex = length - 1;
 	for (int i = 0; i < length; ++i)
 	{
-		if (*ptr != ' '&&*ptr != '\n') break;
+		if (*ptr != ' '&&*ptr != '\n'&&*ptr!='\t') break;
 		trimStopIndex--;
 		ptr--;
 	}
@@ -589,6 +630,12 @@ std::ostream& operator<<(std::ostream& ostr, const String& string)
 }
 
 String operator+(const String& left, const String& right)
+{
+	String result = left;
+	return result.append(right);
+}
+
+String operator+(const String& left, const char* right)
 {
 	String result = left;
 	return result.append(right);

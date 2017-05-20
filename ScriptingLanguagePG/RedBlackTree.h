@@ -66,7 +66,7 @@ public:
 			return *lhs.key >= *rhs.key;
 		}
 	};
-	explicit RedBlackTree(Duplicates=FORBID);
+	/*explicit*/ RedBlackTree(Duplicates=FORBID);
 	~RedBlackTree();
 	void push(Key*key, Value*value)throw(DuplicateException);
 	void update(Key*key, Value*value)throw(NotFoundException);
@@ -128,7 +128,7 @@ public:
 	
 
 private:
-	explicit Iterator(Node*node, bool end, RedBlackTree*rbt);
+	/*explicit*/ Iterator(Node*node, bool end, RedBlackTree*rbt);
 	Node*node;
 	RedBlackTree * redBlackTree;
 	bool end;

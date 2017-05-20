@@ -1,8 +1,8 @@
-#include "krLIB/String.h"
-#include "krLIB/Vector.h"
-#include "krLIB/Console.h"
-#include "krLIB/Stack.h"
-#include "krLIB/Map.h"
+#include "String.h"
+#include "Vector.h"
+#include "Console.h"
+#include "Stack.h"
+#include "Map.h"
 #include "Value.h"
 #include <iostream>
 using namespace std;
@@ -10,41 +10,56 @@ using namespace std;
 /*
  * TODO: care situation where one var or number is a condition
  * TODO: care unary operators
+ * TODO: assignment operator as right-handed, multiple assignments
+ * 
  */
-unsigned int operationsConstraint;
+
 unsigned int operationsLimit;
+unsigned int operationsCounter = 1;
 Map<String, Value> variables(Duplicates::OVERRIDE);
 Vector <String> variablesToPrint;
 Map <String, int> operators(Duplicates::FORBID);
+
+
+
+
 void printVariables();
-void setOperationsConstraint();
+void setOperationsLimit();
 void setVariablesToPrint();
 void init();
 void parseInput(String input);
-void condition(String conditionCommand);
-void loop(String loopCommand);
 Vector<String> splitOperations(String expression);
 Vector<String> splitComplexOperation(String operation);
 String convertToRPN(String expression);
 Value calculateRPN(String rpnExpression);
-String calculate(String command, String lVal, String rVal = "");
+String calculate(String command, String lVal, String rVal = "") throw(OperationsLimitExceeded);
 String deleteNeedlessWhiteSpaces(String expression);
-bool isCompareOperator(const String&text);
+String minToMinPlus(String input);
+String unaryMinusTo$(String input);
+void executeLoop(const String& operation);
+void executeIf(const String& operation);
+bool executeSimpleOperation(const String& operation);
+bool performOperation(const String& operation);
+
+
 
 void printVariables()
 {
-	for (String* var : variablesToPrint)
-		std::cout << *var << " " << *variables.peek(var) << std::endl;
+	cout << operationsCounter << endl;
+	//for (String* var : variablesToPrint)
+	for(Vector<String>::Iterator it = variablesToPrint.begin(); it!=variablesToPrint.end();++it)
+		std::cout << **it << " " << *variables.peek(*it) << std::endl;
 }
-void setOperationsConstraint()
+void setOperationsLimit()
 {
-	std::cin >> operationsConstraint;
+	std::cin >> operationsLimit;
 }
 void setVariablesToPrint()
 {
 	variablesToPrint = Console::readLine().split(' ');
-	for (String* var : variablesToPrint)
-		variables.push(new String(*var), new Value());
+	//for (String* var : variablesToPrint)
+	for (Vector<String>::Iterator it = variablesToPrint.begin(); it != variablesToPrint.end(); ++it)
+		variables.push(new String(**it), new Value());
 }
 void init()
 {
@@ -67,43 +82,23 @@ void init()
 	operators.push(new String("-u"), new int(7));
 }
 
-bool performOperation(const String& operation);
+
 
 void parseInput(String input)
 {
+	if(!input)return;
 	input = input.trim().replace('\n', ' ');
-	//std::cout << input << std::endl;
-	//std::cout << deleteNeedlessWhiteSpaces(input) << std::endl;
-	Vector<String> operations = splitOperations(deleteNeedlessWhiteSpaces(input));
-	for (String* operation : operations)
-	{
-		cout << *operation << endl;
-		//cout << calculateRPN(convertToRPN(*operation));
-		performOperation(*operation);
+	//cout << minToMinPlus(deleteNeedlessWhiteSpaces(input)) << endl;
+	//exit(0);
+	cout << unaryMinusTo$(minToMinPlus(deleteNeedlessWhiteSpaces(input))) << endl;
+	Vector<String> operations = splitOperations(minToMinPlus(deleteNeedlessWhiteSpaces(input)));
+	//for (String* operation : operations) {
+	for(Vector<String>::Iterator it = operations.begin(); it!=operations.end();++it){
+		performOperation(**it);
 	}
-	//cout << calculateRPN(convertToRPN(input));
-	//cout << endl;
-	/*while (input)
-	{
-		String block;
-		do {
-			block = input.readSegment();
-			input = input.substring(block.getLength());
-		} while (block == " ");
-		std::cout << block << std::endl;
-	}*/
-
-
 }
-void condition(String conditionCommand)
-{
 
-}
-void loop(String loopCommand) {
-
-}
 Vector<String> splitOperations(String expression)
-//TODO: fix test 8 (brackets and operations)
 {
 	Vector<String>result;
 	expression = expression.trim().replace('\n', ' ');
@@ -175,18 +170,10 @@ Vector<String> splitOperations(String expression)
 			String tmp = expression;
 			int i = 0;
 			int bracketsCounter;
-			while (tmp[i] != ' ' && tmp[i] != '{' && tmp[i] != '?' && tmp[i] != '@' /*&& tmp[i] != ')'*/&&tmp[i] != '}')//i nie jest tak ¿e liczba 
+			while (tmp[i] != ' ' && tmp[i] != '{' && tmp[i] != '?' && tmp[i] != '@'&&tmp[i] != '}')
 			{
 				++i;
 				if (i >= tmp.getLength())break;
-				/*
-				 * jezeli )
-				 *		jezeli bracketsCounter==0
-				 *			break;
-				 *		else
-				 *			bracketsCounter
-				 * jezeli (
-				 */
 			}
 			tmp = tmp.substring(0, i);
 			result.pushLast(new String(tmp));
@@ -197,7 +184,6 @@ Vector<String> splitOperations(String expression)
 		}
 		if (!expression) return result;
 	}
-	//return Vector<String>();
 }
 
 Vector<String> splitComplexOperation(String expression)
@@ -214,8 +200,9 @@ Vector<String> splitComplexOperation(String expression)
 	int i = 2;
 	while (true)
 	{
-		if (expression[i] == '(')
+		if (expression[i] == '(') {
 			++bracketsCounter;
+		}
 		if (expression[i] == ')') {
 			if (bracketsCounter == 0)
 				break;
@@ -224,7 +211,6 @@ Vector<String> splitComplexOperation(String expression)
 		++i;
 	}
 	length = i - 2;
-	//condition = expression.substring(2, length);
 	result.pushLast(new String(expression.substring(2, length)));
 
 	//read body
@@ -246,9 +232,7 @@ Vector<String> splitComplexOperation(String expression)
 		++i;
 	}
 	length = i - 1;
-	//body = expression.substring(1, length).trim();
 	result.pushLast(new String(expression.substring(1, length).trim()));
-	//expression = expression.substring(i + 1);
 	return result;
 }
 
@@ -261,7 +245,7 @@ String convertToRPN(String expression)
 	{
 		token = expression.readSegment();
 		expression = expression.substring(token.getLength());
-		if (String::isLetter(token[0]) || String::isDigit(token[0]) || token[0]=='-'&&String::isDigit(token[1])&&token.getLength()>=2)
+		if (String::isLetter(token[0]) || String::isDigit(token[0]) || token[0] == '-'&&String::isDigit(token[1]) && token.getLength() >= 2)
 			result += token + " ";
 		else if (token == "(")
 			stack.Push(new String(token));
@@ -317,10 +301,6 @@ Value calculateRPN(String rpnExpression)
 			val2 = *tmp;
 			delete tmp;
 			tmp = stack.Pop();
-			//if (tmp == nullptr) {//operacja unarna (bo brakuje pierwszego operanda)
-			//	stack.Push(new String(calculate(token, val2)));
-			//	continue;;
-			//}
 			val1 = *tmp;
 			delete tmp;
 			result = calculate(token, val1, val2);
@@ -332,13 +312,22 @@ Value calculateRPN(String rpnExpression)
 	delete tmp;
 	return (Value)result;
 }
+
+
 String calculate(String command, String lVal, String rVal)
 {
+	if (operationsCounter >= operationsLimit)
+		throw OperationsLimitExceeded();
+	++operationsCounter;
+
+
 
 	Value left, right;
-	if (String::isDigit(lVal[0]))
+
+	//lVal processing
+	if (String::isDigit(lVal[0]) || lVal[0] == '-'&&String::isDigit(lVal[1]) && lVal.getLength() >= 2)//if number or negative number
 		left = (Value)lVal;
-	else if (String::isLetter(lVal[0]))
+	else if (String::isLetter(lVal[0]))//if variable name
 	{
 		const Value*var = variables.peek(&lVal);
 		if (!var) //if var does not exist -> create it
@@ -350,6 +339,8 @@ String calculate(String command, String lVal, String rVal)
 			left = *var;
 		}
 	}
+
+	//rVal processing
 	if (rVal == "")
 	{
 		if (command == "!")
@@ -357,7 +348,7 @@ String calculate(String command, String lVal, String rVal)
 		if (command == "-")
 			return -left;
 	}
-	if (String::isDigit(rVal[0])|| rVal[0] == '-'&&String::isDigit(rVal[1]) && rVal.getLength() >= 2)
+	if (String::isDigit(rVal[0]) || rVal[0] == '-'&&String::isDigit(rVal[1]) && rVal.getLength() >= 2)//if number or negative number
 		right = (Value)rVal;
 	else if (String::isLetter(rVal[0]))
 	{
@@ -367,6 +358,8 @@ String calculate(String command, String lVal, String rVal)
 		else
 			right = *var;
 	}
+
+
 
 	if (command == "==") return left == right;
 	if (command == "!=") return left != right;
@@ -402,7 +395,7 @@ String deleteNeedlessWhiteSpaces(String expression)
 		segment3 = expression.substring(segment1.getLength() + segment2.getLength()).readSegment();
 		if ((String::isLetter(segment1[0]) || String::isDigit(segment1[0]) || segment1 == "}" || segment1 == ")")
 			&& (segment2 == " ")
-			&& (String::isLetter(segment3[0]) || String::isDigit(segment3[0])/* || segment3 == "}" || segment3 == ")"*/ || segment3[0] == '('))
+			&& (String::isLetter(segment3[0]) || String::isDigit(segment3[0]) || segment3[0] == '('))
 		{
 
 			result += expression.substring(0, segment1.getLength() + segment2.getLength() + segment3.getLength());
@@ -422,7 +415,7 @@ String deleteNeedlessWhiteSpaces(String expression)
 		}
 
 		//if result last char and first expression char are var-var, digit-var, var-digit, digit-digit
-		//situation caused by two white characters one by one
+		//situation caused by two or more white characters one by one
 		if (
 			(String::isLetter(result[result.getLength() - 1]) || String::isDigit(result[result.getLength() - 1]))
 			&&
@@ -434,30 +427,39 @@ String deleteNeedlessWhiteSpaces(String expression)
 	return result;
 }
 
-bool isCompareOperator(const String& text)
-{
-	if (text == ">" || text == ">=" || text == "<" || text == "<=" || text == "==" || text == "!=")return true;
-	return false;
-}
-
-void executeLoop(const String& operation);
-
-void executeIf(const String& operation);
-
-bool executeSimpleOperation(const String& operation);
 
 bool performOperation(const String& operation)
 {
-	if (operation[0] == '@')
+	if (operation[0] == '@') 
 		executeLoop(operation);
-	else if (operation[0] == '?')
+	
+	else if (operation[0] == '?') 
 		executeIf(operation);
+	
 	else
 		return executeSimpleOperation(operation);
 	return false;
 }
 
-bool performCondition(const String& condition);
+
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!OBSOLETE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+String minToMinPlus(String input)
+{
+	
+	for (int i = 0; i < input.getLength()-2; ++i)
+	{
+		if ((String::isDigit(input[i])||String::isLetter(input[i])) && input[i + 1] == '-'&&String::isDigit(input[i + 2]))
+			input.insertBefore(i + 1, "+");
+	}
+
+	return input;
+}
+
+String unaryMinusTo$(String input)
+{
+	return input.replace('-', '$');
+}
+
 
 void executeLoop(const String& operation)
 {
@@ -467,56 +469,54 @@ void executeLoop(const String& operation)
 	Vector<String> bodyOperations = splitOperations(body);
 	while (performOperation(condition))
 	{
+		++operationsCounter;
 		if (bodyOperations.getSize() == 1)
 			performOperation(body);
 		else
-			for (String* operation : bodyOperations)
-				performOperation(*operation);
+			//for (String* operation : bodyOperations)
+			for(Vector<String>::Iterator it = bodyOperations.begin();it!=bodyOperations.end(); ++it)
+				performOperation(**it);
 	}
 
 }
 
 void executeIf(const String& operation)
 {
+	++operationsCounter;
 	Vector<String> splittedIf = splitComplexOperation(operation);
 	String condition = *splittedIf[0];
 	String body = *splittedIf[1];
 	Vector<String>bodyOperations = splitOperations(body);
 	if (performOperation(condition))
 	{
+
 		if (bodyOperations.getSize() == 1)
 			performOperation(body);
 		else
-			for (String* operation : bodyOperations)
-				performOperation(*operation);
+			//for (String* operation : bodyOperations)
+			for(Vector<String>::Iterator it = bodyOperations.begin(); it!=bodyOperations.end();++it)
+				performOperation(**it);
 	}
 }
 
-bool executeCompareExpression(const String& operation);
 
-bool executeAssignmentOperation(const String& operation);
 
 bool executeSimpleOperation(const String& operation)
 {
 	return calculateRPN(convertToRPN(operation));
 }
 
-
-bool executeAssignmentOperation(const String& operation)
-{
-	return false;
-}
-
-
 int main(int argc, char* argv[])
 {
 	init();
-	setOperationsConstraint();
+	setOperationsLimit();
 	setVariablesToPrint();
-	parseInput(Console::readInput());
-
+	try {
+		parseInput(Console::readInput());
+	}
+	catch (OperationsLimitExceeded) {}
 
 	printVariables();
-	getchar();
+	//getchar();
 	return 0;
 }

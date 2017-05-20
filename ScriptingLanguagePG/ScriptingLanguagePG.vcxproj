@@ -28,7 +28,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -41,7 +41,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -142,31 +142,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="krLIB\Console.cpp" />
-    <ClCompile Include="krLIB\Exception.cpp" />
-    <ClCompile Include="krLIB\List.cpp" />
-    <ClCompile Include="krLIB\Map.cpp" />
-    <ClCompile Include="krLIB\MultiMap.cpp" />
-    <ClCompile Include="krLIB\Queue.cpp" />
-    <ClCompile Include="krLIB\RedBlackTree.cpp" />
-    <ClCompile Include="krLIB\Stack.cpp" />
-    <ClCompile Include="krLIB\String.cpp" />
-    <ClCompile Include="krLIB\Vector.cpp" />
+    <ClCompile Include="Console.cpp" />
+    <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="List.cpp" />
+    <ClCompile Include="Map.cpp" />
+    <ClCompile Include="MultiMap.cpp" />
+    <ClCompile Include="Queue.cpp" />
+    <ClCompile Include="RedBlackTree.cpp" />
+    <ClCompile Include="Stack.cpp" />
+    <ClCompile Include="String.cpp" />
+    <ClCompile Include="Vector.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Operation.cpp" />
     <ClCompile Include="Value.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="krLIB\Console.h" />
-    <ClInclude Include="krLIB\Exception.h" />
-    <ClInclude Include="krLIB\List.h" />
-    <ClInclude Include="krLIB\Map.h" />
-    <ClInclude Include="krLIB\MultiMap.h" />
-    <ClInclude Include="krLIB\Queue.h" />
-    <ClInclude Include="krLIB\RedBlackTree.h" />
-    <ClInclude Include="krLIB\Stack.h" />
-    <ClInclude Include="krLIB\String.h" />
-    <ClInclude Include="krLIB\Vector.h" />
+    <ClInclude Include="Console.h" />
+    <ClInclude Include="Exception.h" />
+    <ClInclude Include="List.h" />
+    <ClInclude Include="Map.h" />
+    <ClInclude Include="MultiMap.h" />
+    <ClInclude Include="Queue.h" />
+    <ClInclude Include="RedBlackTree.h" />
+    <ClInclude Include="Stack.h" />
+    <ClInclude Include="String.h" />
+    <ClInclude Include="Vector.h" />
     <ClInclude Include="Operation.h" />
     <ClInclude Include="Value.h" />
   </ItemGroup>

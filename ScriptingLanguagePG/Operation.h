@@ -1,5 +1,5 @@
 #pragma once
-#include "krLIB/String.h"
+#include "String.h"
 
 enum OperationType
 {

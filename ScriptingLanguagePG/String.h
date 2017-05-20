@@ -52,33 +52,35 @@ public:
 	 * terminated with '\0'
 	 * CAUSE MEM LEAK IF UNCATCHED
 	 */
-	explicit operator const char *() const;
+	/*explicit*/ operator const char *() const;
 
 
 	/**
 	 * \brief NOT IMPLEMENTED
 	 */
-	explicit operator long long int()const;
+	/*explicit*/ operator long long int()const;
 
 
 
 	/**
 	 * \brief NOT IMPLEMENTED
 	 */
-	explicit operator unsigned long long int()const;
+	/*explicit*/ operator unsigned long long int()const;
 
 	/**
 	 * \brief NOT IMPLEMENTED
 	 */
-	explicit operator double()const;
-	explicit operator bool()const;
+	/*explicit*/ operator double()const;
+	/*explicit*/ operator bool()const;
 
 
 	//___________________________________________Operators_________________________________________________
 	String &operator+=(const String &);
 	String &operator=(const String&);
 	char& operator[](size_t index) const throw(OutOfRangeException);
+	char& operator[](int index) const throw(OutOfRangeException);
 	bool operator==(const String&other) const;
+	bool operator==(const char * other)const;
 	bool operator!=(const String&other)const;
 	bool operator>(const String&other)const;
 	bool operator<(const String&other)const;
@@ -88,6 +90,7 @@ public:
 	//____________________________________String manipulation methods______________________________________
 	String&append(const String&);
 	String&prepend(const String&);
+	String& insertBefore(size_t index, const String&string);
 	String substring(size_t beginIndex, size_t count)const throw(OutOfRangeException);
 	String substring(size_t beginIndex)const throw(OutOfRangeException);
 	String replace(const char&from, const char&to)const;
@@ -124,6 +127,7 @@ private:
 
 std::ostream& operator<<(std::ostream&ostr, const String&string);
 String operator+(const String&left, const String&right);
+String operator+(const String&left, const char *right);
 String operator+(String&left, String&right);
 template <typename T> String operator+(String&string, const T& other)
 {
@@ -167,7 +171,7 @@ public:
 	bool operator<(const Iterator&other)const;
 	bool operator<=(const Iterator&other)const;
 private:
-	explicit Iterator(Type*ptr);
+	/*explicit*/ Iterator(Type*ptr);
 	Type*ptr;
 	friend String;
 };
