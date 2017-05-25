@@ -284,7 +284,7 @@ String& String::operator+=(const String& appendedString)
 	return append(appendedString);
 }
 
-String& String::operator=(const String&other)
+String& String::operator=(const String&other)//TODO: sometimes other nullptr occur, fix that
 {
 	if (array)
 		delete[] array;
@@ -320,6 +320,11 @@ bool String::operator==(const char* other) const
 }
 
 bool String::operator!=(const String& other) const
+{
+	return !operator==(other);
+}
+
+bool String::operator!=(const char* other) const
 {
 	return !operator==(other);
 }
@@ -477,7 +482,7 @@ String String::readDecimalIntegerNumber() const
 }
 
 /**
- * \brief read and return string of char of one "type"
+ * \brief return fragment of one "type"
  * if "type" not recognized returns one char
  * \return String of matching chars
  */

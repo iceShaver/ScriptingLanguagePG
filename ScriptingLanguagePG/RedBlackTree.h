@@ -6,13 +6,17 @@
 #include "String.h"
 #include <iostream>
 enum Color { RED, BLACK };
-enum Duplicates{FORBID, IGNORE, ALLOW, OVERRIDE};
+enum Duplicates { FORBID, IGNORE, ALLOW, OVERRIDE };
+
+
+//______________________________________________RedBlackTree class header_______________________________________________
 template <class Key, class Value>
 class RedBlackTree
 {
-	
+
 public:
 	class Iterator;
+	//____________________________________Node class header________________________________________________________
 	class Node
 	{
 	public:
@@ -66,38 +70,35 @@ public:
 			return *lhs.key >= *rhs.key;
 		}
 	};
-	/*explicit*/ RedBlackTree(Duplicates=FORBID);
+	/*explicit*/ RedBlackTree(Duplicates = FORBID);
 	~RedBlackTree();
 	void push(Key*key, Value*value)throw(DuplicateException);
 	void update(Key*key, Value*value)throw(NotFoundException);
 	Value* pull(Key*key);
 	Value* peek(Key*key);
 	void remove(const Key&key);
-	void print();
 	Iterator begin();
 	Iterator end();
 	Node*getRoot();
 	const Node*getMinNode();
-	void iterate();
-	void rIterate();
 private:
-	String cr, cl, cp;
-	void printRBT(String sp, String sn, Node*node);
-	void DFSRelease(Node*root);
+	void removeTreeDFS(Node*node);
 	Node*find(const Key*key);
-	Node*min(Node*node);
-	Node*max(Node*node);
+	Node*getMin(Node*node);
+	Node*getMax(Node*node);
 	Node*successor(const Node*node);
 	Node*predecessor(const Node*node);
-	void rotateLeft(Node*root);
-	void rotateRight(Node*root);
-	void remove(Node*nodeToRemove);
-	Node sentinel;
+	void rotateLeft(Node*axis);
+	void rotateRight(Node*axis);
+	void removeNode(Node*nodeToRemove);
+	Node terminator;
 	Node*root;
 	Duplicates duplicatesBehaviour;
 	friend Iterator;
 };
 
+
+//_______________________________________Iterator class header________________________________________________
 template <class Key, class Value>
 class RedBlackTree<Key, Value>::Iterator
 {
@@ -125,7 +126,7 @@ public:
 	bool operator<(const Iterator&other)const;
 	bool operator<=(const Iterator&other)const;
 
-	
+
 
 private:
 	/*explicit*/ Iterator(Node*node, bool end, RedBlackTree*rbt);
@@ -136,44 +137,36 @@ private:
 };
 
 
-
+//___________________________________________RedBlackTree class implementation______________________________________________
 template <class Key, class Value>
 RedBlackTree<Key, Value>::RedBlackTree(Duplicates duplicatesBehaviour)
 {
-	cr = cl = cp = "  ";
-	cr[0] = 218;
-	cr[1] = 196;
-	cl[0] = 192;
-	cl[1] = 196;
-	cp[0] = 179;
-	sentinel.color = BLACK;
-	sentinel.parent = &sentinel;
-	sentinel.left = &sentinel;
-	sentinel.right = &sentinel;
-	root = &sentinel;
+	terminator.color = BLACK;
+	terminator.parent = &terminator;
+	terminator.left = &terminator;
+	terminator.right = &terminator;
+	root = &terminator;
 	this->duplicatesBehaviour = duplicatesBehaviour;
 }
 
 template <class Key, class Value>
 RedBlackTree<Key, Value>::~RedBlackTree()
 {
-	remove(root);
+	removeNode(root);
 }
 
 
 template <class Key, class Value>
 void RedBlackTree<Key, Value>::push(Key* key, Value* value) throw(DuplicateException)
 {
-	if(find(key))
+	if (find(key))
 	{
 		switch (duplicatesBehaviour)
 		{
 		case FORBID:
 			throw DuplicateException();
-			break;
 		case IGNORE:
 			return;
-			break;
 		case ALLOW:
 			break;
 		case OVERRIDE:
@@ -183,87 +176,88 @@ void RedBlackTree<Key, Value>::push(Key* key, Value* value) throw(DuplicateExcep
 			break;
 		}
 	}
-	Node*Y;
-	Node * X = new Node;
-	X->left = &sentinel;
-	X->right = &sentinel;
-	X->parent = root;
-	X->value = value;
-	X->key = key;
-	if (X->parent == &sentinel) root = X;
+	Node*tmp;
+	Node * newNode = new Node;
+	newNode->left = &terminator;
+	newNode->right = &terminator;
+	newNode->parent = root;
+	newNode->value = value;
+	newNode->key = key;
+	if (newNode->parent == &terminator)
+		root = newNode;
 	else
 		while (true)
 		{
-			if (*(key) < *(X->parent->key))
+			if (*(key) < *(newNode->parent->key))
 			{
-				if (X->parent->left == &sentinel)
+				if (newNode->parent->left == &terminator)
 				{
-					X->parent->left = X;
+					newNode->parent->left = newNode;
 					break;
 				}
-				X->parent = X->parent->left;
+				newNode->parent = newNode->parent->left;
 			}
 			else
 			{
-				if (X->parent->right == &sentinel)
+				if (newNode->parent->right == &terminator)
 				{
-					X->parent->right = X;
+					newNode->parent->right = newNode;
 					break;
 				}
-				X->parent = X->parent->right;
+				newNode->parent = newNode->parent->right;
 			}
 		}
-	X->color = RED;
-	while ((X != root) && (X->parent->color == RED))
+
+
+	newNode->color = RED;
+	while ((newNode != root) && (newNode->parent->color == RED))
 	{
-		if (X->parent == X->parent->parent->left)
+		if (newNode->parent == newNode->parent->parent->left)
 		{
-			Y = X->parent->parent->right;
+			tmp = newNode->parent->parent->right;
 
-			if (Y->color == RED)
+			if (tmp->color == RED)
 			{
-				X->parent->color = BLACK;
-				Y->color = BLACK;
-				X->parent->parent->color = RED;
-				X = X->parent->parent;
+				newNode->parent->color = BLACK;
+				tmp->color = BLACK;
+				newNode->parent->parent->color = RED;
+				newNode = newNode->parent->parent;
 				continue;
 			}
 
-			if (X == X->parent->right)
+			if (newNode == newNode->parent->right)
 			{
-				X = X->parent;
-				rotateLeft(X);
+				newNode = newNode->parent;
+				rotateLeft(newNode);
 			}
 
-			X->parent->color = BLACK;
-			X->parent->parent->color = RED;
-			rotateRight(X->parent->parent);
+			newNode->parent->color = BLACK;
+			newNode->parent->parent->color = RED;
+			rotateRight(newNode->parent->parent);
 			break;
 		}
-		else
+
+		tmp = newNode->parent->parent->left;
+
+		if (tmp->color == RED)
 		{
-			Y = X->parent->parent->left;
-
-			if (Y->color == RED)
-			{
-				X->parent->color = BLACK;
-				Y->color = BLACK;
-				X->parent->parent->color = RED;
-				X = X->parent->parent;
-				continue;
-			}
-
-			if (X == X->parent->left)
-			{
-				X = X->parent;
-				rotateRight(X);
-			}
-
-			X->parent->color = BLACK;
-			X->parent->parent->color = RED;
-			rotateLeft(X->parent->parent);
-			break;
+			newNode->parent->color = BLACK;
+			tmp->color = BLACK;
+			newNode->parent->parent->color = RED;
+			newNode = newNode->parent->parent;
+			continue;
 		}
+
+		if (newNode == newNode->parent->left)
+		{
+			newNode = newNode->parent;
+			rotateRight(newNode);
+		}
+		newNode->parent->color = BLACK;
+		newNode->parent->parent->color = RED;
+		rotateLeft(newNode->parent->parent);
+		break;
+
 	}
 	root->color = BLACK;
 
@@ -285,7 +279,7 @@ Value* RedBlackTree<Key, Value>::pull(Key* key)
 	if (!foundNode) return nullptr;
 	Value*result = foundNode->value;
 	foundNode->value = nullptr;
-	remove(foundNode);
+	removeNode(foundNode);
 	return result;
 }
 
@@ -298,92 +292,55 @@ Value* RedBlackTree<Key, Value>::peek(Key* key)
 }
 
 template <class Key, class Value>
-void RedBlackTree<Key, Value>::remove(const Key& key)
+void RedBlackTree<Key, Value>::remove(const Key& key)//TODO: absolutely fix that!!!!!!!!!!!!!!!
 {
 	delete find(key);
 }
 
 template <class Key, class Value>
-void RedBlackTree<Key, Value>::print()
+void RedBlackTree<Key, Value>::removeTreeDFS(Node* node)
 {
-	printRBT("", "", root);
-}
-
-template <class Key, class Value>
-typename RedBlackTree<Key, Value>::Iterator RedBlackTree<Key, Value>::begin()
-{
-	return Iterator(min(root), false, this);
-}
-
-template <class Key, class Value>
-typename RedBlackTree<Key, Value>::Iterator RedBlackTree<Key, Value>::end()
-{
-	return Iterator(max(root), true, this);
-}
-
-template <class Key, class Value>
-void RedBlackTree<Key, Value>::printRBT(String sp, String sn, Node* node)
-{
-	String t;
-	if (node != &sentinel)
+	if (node != &terminator)
 	{
-		t = sp;
-		if (sn == cr) 
-			t[t.getLength() - 2] = ' ';
-		printRBT(t + cp, cr, node->right);
-
-		t = t.substring(0, sp.getLength() - 2);
-		std::cout << t << sn << node->color << ":" << *(node->key) << std::endl;
-		t = sp;
-		if (sn == cl)
-			t[t.getLength() - 2] = ' ';
-		printRBT(t + cp, cl, node->left);
-	}
-}
-
-template <class Key, class Value>
-void RedBlackTree<Key, Value>::DFSRelease(Node* root)
-{
-	if (root != &sentinel)
-	{
-		DFSRelease(root->left);
-		DFSRelease(root->right);
-		delete root;
+		removeTreeDFS(node->left);
+		removeTreeDFS(node->right);
+		delete node;
 	}
 }
 
 template <class Key, class Value>
 typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::find(const Key* key)
 {
-	if (root == &sentinel)
+	if (root == &terminator)
 		return nullptr;
 	Node * result = root;
-	while ((root != &sentinel)
-		&& (*(result->key) != *key)) {
+	while (*(result->key) != *key) {
 		if (*key < *(result->key))
 			result = result->left;
 		else
 			result = result->right;
-		if (result == &sentinel)
+		if (result == &terminator)
 			return nullptr;
 	}
-		return result;
+	return result;
 }
 
+
+
 template <class Key, class Value>
-typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::min(Node* node)
+typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::getMin(Node* node)
 {
-	if (node != &sentinel)
-		while (node->left != &sentinel)
+	if (node != &terminator)
+		while (node->left != &terminator)
 			node = node->left;
 	return node;
 }
 
 template <class Key, class Value>
-typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::max(Node* node)
+typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::getMax(Node* node)
 {
-	if (node != &sentinel)
-		while (node->right != &sentinel)
+	if (node != &terminator)
+		while (node->right != &terminator)
 			node = node->right;
 	return node;
 }
@@ -391,13 +348,13 @@ typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::max(Node* nod
 template <class Key, class Value>
 typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::successor(const Node* node)
 {
-	if (node != &sentinel)
+	if (node != &terminator)
 	{
-		if (node->right != &sentinel) return min(node->right);
-		else
+		if (node->right != &terminator)
+			return getMin(node->right);
 		{
 			Node * r = node->parent;
-			while ((r != &sentinel) && (node == r->right))
+			while ((r != &terminator) && (node == r->right))
 			{
 				node = r;
 				r = r->parent;
@@ -405,27 +362,26 @@ typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::successor(con
 			return r;
 		}
 	}
-	return &sentinel;
+	return &terminator;
 }
 
 template <class Key, class Value>
 typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::predecessor(const Node* node)
 {
-	if(node!=&sentinel)
+	if (node != &terminator)
 	{
-		if (node->left != &sentinel)return max(node->left);
-		else
+		if (node->left != &terminator)
+			return getMax(node->left);
+		Node*r = node->parent;
+		while ((r != &terminator) && node == r->left)
 		{
-			Node*r = node->parent;
-			while((r!=&sentinel)&&node==r->left)
-			{
-				node = r;
-				r = r->parent;
-			}
-			return r;
+			node = r;
+			r = r->parent;
 		}
+		return r;
+
 	}
-	return &sentinel;
+	return &terminator;
 }
 
 template <class Key, class Value>
@@ -437,168 +393,169 @@ typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::getRoot()
 template <class Key, class Value>
 const typename RedBlackTree<Key, Value>::Node* RedBlackTree<Key, Value>::getMinNode()
 {
-	return min(root);
+	return getMin(root);
 }
 
-template <class Key, class Value>
-void RedBlackTree<Key, Value>::iterate()
-{
-	const Node*node = min(root);
-	do
-	{
-		cout << *(node->key) << endl;
-	}
-	while ((node=successor(node))!=&sentinel);
-}
+
 
 template <class Key, class Value>
-void RedBlackTree<Key, Value>::rIterate()
+void RedBlackTree<Key, Value>::rotateLeft(Node* axis)
 {
-	const Node*node = max(root);
-	do
+	Node * tmp = axis->right;
+	if (tmp != &terminator)
 	{
-		cout << *(node->key) << endl;
-	}
-	while ((node=predecessor(node))!=&sentinel);
-}
-
-template <class Key, class Value>
-void RedBlackTree<Key, Value>::rotateLeft(Node* A)
-{
-	Node * B = A->right;
-	if (B != &sentinel)
-	{
-		Node *p = A->parent;
-		A->right = B->left;
-		if (A->right != &sentinel) A->right->parent = A;
-
-		B->left = A;
-		B->parent = p;
-		A->parent = B;
-
-		if (p != &sentinel)
-		{
-			if (p->left == A) p->left = B; else p->right = B;
-		}
-		else root = B;
+		Node *parent = axis->parent;
+		axis->right = tmp->left;
+		if (axis->right != &terminator) axis->right->parent = axis;
+		tmp->left = axis;
+		tmp->parent = parent;
+		axis->parent = tmp;
+		if (parent != &terminator)
+			if (parent->left == axis)
+				parent->left = tmp;
+			else 
+				parent->right = tmp;
+		else 
+			root = tmp;
 	}
 
 }
 
 template <class Key, class Value>
-void RedBlackTree<Key, Value>::rotateRight(Node* A)
+void RedBlackTree<Key, Value>::rotateRight(Node* axis)
 {
-	Node * B = A->left;
-	if (B != &sentinel)
+	Node * tmp = axis->left;
+	if (tmp != &terminator)
 	{
-		Node *p = A->parent;
-		A->left = B->right;
-		if (A->left != &sentinel) A->left->parent = A;
-
-		B->right = A;
-		B->parent = p;
-		A->parent = B;
-
-		if (p != &sentinel)
-		{
-			if (p->left == A) p->left = B; else p->right = B;
-		}
-		else root = B;
+		Node *parent = axis->parent;
+		axis->left = tmp->right;
+		if (axis->left != &terminator) axis->left->parent = axis;
+		tmp->right = axis;
+		tmp->parent = parent;
+		axis->parent = tmp;
+		if (parent != &terminator)
+			if (parent->left == axis)
+				parent->left = tmp;
+		else 
+			parent->right = tmp;
+		else 
+			root = tmp;
 	}
 }
 
 template <class Key, class Value>
-void RedBlackTree<Key, Value>::remove(Node* nodeToRemove)
+void RedBlackTree<Key, Value>::removeNode(Node* nodeToRemove)
 {
-	Node * W, *Y, *Z;
+	Node * tmpNode1, *tmpNode2, *tmpNode3;
 
-	if ((nodeToRemove->left == &sentinel) || (nodeToRemove->right == &sentinel)) Y = nodeToRemove;
-	else                                    Y = successor(nodeToRemove);
+	if ((nodeToRemove->left == &terminator) || (nodeToRemove->right == &terminator))
+		tmpNode2 = nodeToRemove;
+	else
+		tmpNode2 = successor(nodeToRemove);
 
-	if (Y->left != &sentinel) Z = Y->left;
-	else              Z = Y->right;
+	if (tmpNode2->left != &terminator)
+		tmpNode3 = tmpNode2->left;
+	else
+		tmpNode3 = tmpNode2->right;
+	tmpNode3->parent = tmpNode2->parent;
+	if (tmpNode2->parent == &terminator)
+		root = tmpNode3;
+	else if (tmpNode2 == tmpNode2->parent->left)
+		tmpNode2->parent->left = tmpNode3;
+	else
+		tmpNode2->parent->right = tmpNode3;
 
-	Z->parent = Y->parent;
+	if (tmpNode2 != nodeToRemove)
+		nodeToRemove->key = tmpNode2->key;
 
-	if (Y->parent == &sentinel) root = Z;
-	else if (Y == Y->parent->left) Y->parent->left = Z;
-	else                      Y->parent->right = Z;
-
-	if (Y != nodeToRemove) nodeToRemove->key = Y->key;
-
-	if (Y->color == BLACK) 
-		while ((Z != root) && (Z->color == BLACK))
-			if (Z == Z->parent->left)
+	if (tmpNode2->color == BLACK)
+		while ((tmpNode3 != root) && (tmpNode3->color == BLACK))
+			if (tmpNode3 == tmpNode3->parent->left)
 			{
-				W = Z->parent->right;
+				tmpNode1 = tmpNode3->parent->right;
 
-				if (W->color == RED)
-				{          
-					W->color = BLACK;
-					Z->parent->color = RED;
-					rotateLeft(Z->parent);
-					W = Z->parent->right;
+				if (tmpNode1->color == RED)
+				{
+					tmpNode1->color = BLACK;
+					tmpNode3->parent->color = RED;
+					rotateLeft(tmpNode3->parent);
+					tmpNode1 = tmpNode3->parent->right;
 				}
 
-				if ((W->left->color == BLACK) && (W->right->color == BLACK))
-				{          
-					W->color = RED;
-					Z = Z->parent;
+				if ((tmpNode1->left->color == BLACK) && (tmpNode1->right->color == BLACK))
+				{
+					tmpNode1->color = RED;
+					tmpNode3 = tmpNode3->parent;
 					continue;
 				}
 
-				if (W->right->color == BLACK)
-				{          
-					W->left->color = BLACK;
-					W->color = RED;
-					rotateRight(W);
-					W = Z->parent->right;
+				if (tmpNode1->right->color == BLACK)
+				{
+					tmpNode1->left->color = BLACK;
+					tmpNode1->color = RED;
+					rotateRight(tmpNode1);
+					tmpNode1 = tmpNode3->parent->right;
 				}
 
-				W->color = Z->parent->color;
-				Z->parent->color = BLACK;
-				W->right->color = BLACK;
-				rotateLeft(Z->parent);
-				Z = root;       
+				tmpNode1->color = tmpNode3->parent->color;
+				tmpNode3->parent->color = BLACK;
+				tmpNode1->right->color = BLACK;
+				rotateLeft(tmpNode3->parent);
+				tmpNode3 = root;
 			}
 			else
-			{                
-				W = Z->parent->left;
+			{
+				tmpNode1 = tmpNode3->parent->left;
 
-				if (W->color == RED)
-				{            
-					W->color = BLACK;
-					Z->parent->color = RED;
-					rotateRight(Z->parent);
-					W = Z->parent->left;
+				if (tmpNode1->color == RED)
+				{
+					tmpNode1->color = BLACK;
+					tmpNode3->parent->color = RED;
+					rotateRight(tmpNode3->parent);
+					tmpNode1 = tmpNode3->parent->left;
 				}
 
-				if ((W->left->color == BLACK) && (W->right->color == BLACK))
-				{            
-					W->color = RED;
-					Z = Z->parent;
+				if ((tmpNode1->left->color == BLACK) && (tmpNode1->right->color == BLACK))
+				{
+					tmpNode1->color = RED;
+					tmpNode3 = tmpNode3->parent;
 					continue;
 				}
 
-				if (W->left->color == BLACK)
-				{            
-					W->right->color = BLACK;
-					W->color = RED;
-					rotateLeft(W);
-					W = Z->parent->left;
+				if (tmpNode1->left->color == BLACK)
+				{
+					tmpNode1->right->color = BLACK;
+					tmpNode1->color = RED;
+					rotateLeft(tmpNode1);
+					tmpNode1 = tmpNode3->parent->left;
 				}
 
-				W->color = Z->parent->color; 
-				Z->parent->color = BLACK;
-				W->left->color = BLACK;
-				rotateRight(Z->parent);
-				Z = root;       
+				tmpNode1->color = tmpNode3->parent->color;
+				tmpNode3->parent->color = BLACK;
+				tmpNode1->left->color = BLACK;
+				rotateRight(tmpNode3->parent);
+				tmpNode3 = root;
 			}
 
-	Z->color = BLACK;
+	tmpNode3->color = BLACK;
 
-	delete Y;
+	delete tmpNode2;
 }
+
+
+//__________________________________________Iterator class implementation____________________________________
+template <class Key, class Value>
+typename RedBlackTree<Key, Value>::Iterator RedBlackTree<Key, Value>::begin()
+{
+	return Iterator(getMin(root), false, this);
+}
+
+template <class Key, class Value>
+typename RedBlackTree<Key, Value>::Iterator RedBlackTree<Key, Value>::end()
+{
+	return Iterator(getMax(root), true, this);
+}
+
 
 template <class Key, class Value>
 RedBlackTree<Key, Value>::Iterator::Iterator() :node(nullptr), end(false), redBlackTree(nullptr)
@@ -606,7 +563,7 @@ RedBlackTree<Key, Value>::Iterator::Iterator() :node(nullptr), end(false), redBl
 }
 
 template <class Key, class Value>
-RedBlackTree<Key, Value>::Iterator::Iterator(const Iterator& other):node(other.node), end(other.end), redBlackTree(other.redBlackTree)
+RedBlackTree<Key, Value>::Iterator::Iterator(const Iterator& other) : node(other.node), end(other.end), redBlackTree(other.redBlackTree)
 {
 }
 
@@ -633,7 +590,7 @@ template <class Key, class Value>
 typename RedBlackTree<Key, Value>::Iterator& RedBlackTree<Key, Value>::Iterator::operator++()
 {
 	Node*succ = redBlackTree->successor(node);
-	if (succ == &redBlackTree->sentinel)
+	if (succ == &redBlackTree->terminator)
 	{
 		end = true;
 		return *this;
@@ -650,12 +607,12 @@ typename RedBlackTree<Key, Value>::Iterator RedBlackTree<Key, Value>::Iterator::
 	 * 0. minimum prawego syna
 	 * 1. rodzic o ile nie lewy
 	 * 2. najbli¿szy przodek z prawym synem
-	 * 3. 
-	 *	
+	 * 3.
+	 *
 	 */
 	Node*succ = redBlackTree->successor(node);
 	Iterator iterator = *this;
-	if(succ==&redBlackTree->sentinel)
+	if (succ == &redBlackTree->terminator)
 	{
 		end = true;
 		return iterator;
@@ -669,7 +626,7 @@ template <class Key, class Value>
 typename RedBlackTree<Key, Value>::Iterator& RedBlackTree<Key, Value>::Iterator::operator--()
 {
 	Node*pre = redBlackTree->predecessor(node);
-	if (pre == &redBlackTree->sentinel) throw OutOfRangeException();
+	if (pre == &redBlackTree->terminator) throw OutOfRangeException();
 	node = pre;
 	end = false;
 	return *this;
@@ -679,7 +636,7 @@ template <class Key, class Value>
 typename RedBlackTree<Key, Value>::Iterator RedBlackTree<Key, Value>::Iterator::operator--(int)
 {
 	Node*pre = redBlackTree->predecessor(node);
-	if (pre == &redBlackTree->sentinel) throw OutOfRangeException();
+	if (pre == &redBlackTree->terminator) throw OutOfRangeException();
 	Iterator iterator = *this;
 	node = pre;
 	end = false;
@@ -694,7 +651,7 @@ typename RedBlackTree<Key, Value>::Iterator& RedBlackTree<Key, Value>::Iterator:
 			this->operator++();
 	else if (offset < 0)
 		while (offset++)
-			this->operator++();
+			this->operator--();
 	return *this;
 }
 
@@ -729,7 +686,7 @@ typename RedBlackTree<Key, Value>::Iterator RedBlackTree<Key, Value>::Iterator::
 template <class Key, class Value>
 bool RedBlackTree<Key, Value>::Iterator::operator==(const Iterator& other) const
 {
-	return (node == other.node)&&(end==other.end);
+	return (node == other.node) && (end == other.end);
 }
 
 template <class Key, class Value>
@@ -766,11 +723,11 @@ bool RedBlackTree<Key, Value>::Iterator::operator<=(const Iterator& other) const
 
 
 template <class Key, class Value>
-RedBlackTree<Key, Value>::Iterator::Iterator(Node* node, bool end, RedBlackTree*rbt):node(node),end(end), redBlackTree(rbt)
+RedBlackTree<Key, Value>::Iterator::Iterator(Node* node, bool end, RedBlackTree*rbt) :node(node), end(end), redBlackTree(rbt)
 {
 }
 
-
+//_______________________________________Node class implementation________________________________________________
 template <class Key, class Value>
 Value* RedBlackTree<Key, Value>::Node::getValue()
 {

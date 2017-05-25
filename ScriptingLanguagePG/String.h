@@ -26,6 +26,7 @@ public:
 	static bool isOperator(String symbol);
 	static char toLower(const char&character);
 	static char toUpper(const char&character);
+	static size_t getCStringLength(const char*);
 
 
 	//________________________________Static conversion functions to String________________________________
@@ -47,29 +48,9 @@ public:
 
 	//________________________________________Converting operators_________________________________________
 
-	/**
-	 * \brief returns new const char * with content of a string
-	 * terminated with '\0'
-	 * CAUSE MEM LEAK IF UNCATCHED
-	 */
 	/*explicit*/ operator const char *() const;
-
-
-	/**
-	 * \brief NOT IMPLEMENTED
-	 */
 	/*explicit*/ operator long long int()const;
-
-
-
-	/**
-	 * \brief NOT IMPLEMENTED
-	 */
 	/*explicit*/ operator unsigned long long int()const;
-
-	/**
-	 * \brief NOT IMPLEMENTED
-	 */
 	/*explicit*/ operator double()const;
 	/*explicit*/ operator bool()const;
 
@@ -82,6 +63,7 @@ public:
 	bool operator==(const String&other) const;
 	bool operator==(const char * other)const;
 	bool operator!=(const String&other)const;
+	bool operator!=(const char * other)const;
 	bool operator>(const String&other)const;
 	bool operator<(const String&other)const;
 	bool operator<=(const String&other)const;
@@ -90,7 +72,7 @@ public:
 	//____________________________________String manipulation methods______________________________________
 	String&append(const String&);
 	String&prepend(const String&);
-	String& insertBefore(size_t index, const String&string);
+	String&insertBefore(size_t index, const String&string);
 	String substring(size_t beginIndex, size_t count)const throw(OutOfRangeException);
 	String substring(size_t beginIndex)const throw(OutOfRangeException);
 	String replace(const char&from, const char&to)const;
@@ -108,12 +90,10 @@ public:
 	const char*c_str()const;
 	size_t getLength() const;
 	size_t getCapacity() const;
-	static size_t getCStringLength(const char*);
 
 	//______________________________________Iterators______________________________________________________
 	Iterator begin()const;
 	Iterator end()const;
-protected:
 private:
 	char *array;
 	size_t capacity;

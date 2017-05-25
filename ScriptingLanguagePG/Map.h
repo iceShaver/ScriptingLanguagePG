@@ -1,7 +1,7 @@
 #pragma once
 #include "RedBlackTree.h"
 template <class Key, class Value>
-class Map : RedBlackTree<Key, Value>
+class Map : private RedBlackTree<Key, Value>
 {
 	typedef RedBlackTree<Key, Value> base;
 public:
